@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useAlert } from "react-alert";
 
+import SourceParser from "./SourceParser";
 import { Input, Heading, Container, Button } from "./styles";
 
 export default () => {
@@ -59,6 +60,7 @@ export default () => {
 
       <br />
       <div ref={commandRef}>{result}</div>
+      <SourceParser />
     </Container>
   );
 };
