@@ -34,8 +34,12 @@ export const ParserInput = styled.textarea`
 `;
 export const ButtonColumn = styled.div`
   margin-right: 16px;
+  display: flex;
+  flex-direction: column;
 `;
-export const MiniButton = styled.button``;
+export const MiniButton = styled.button`
+  margin-bottom: 8px;
+`;
 export const ParserDisplay = styled.div`
   border: 1px solid #3185fc;
   flex: 1;

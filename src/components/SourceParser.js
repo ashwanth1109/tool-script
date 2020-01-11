@@ -56,17 +56,19 @@ describe("${params.name}", () => {
     });
 });
 `;
-  const generateService = useCallback(() => {
+  const generateFactory = useCallback(() => {
     if (source) {
       const sourceWithoutComments = removeComments(source);
       const module = sourceWithoutComments
         .split(".module")[1]
         .split('",')[0]
         .substring(2);
+
       const name = sourceWithoutComments
         .split(".factory")[1]
         .split(`",`)[0]
         .substring(2);
+
       const dependencies = sourceWithoutComments
         .split(".factory")[1]
         .split("function(")[1]
@@ -99,6 +101,40 @@ describe("${params.name}", () => {
     }
   }, [source]);
 
+  const generateServiceClass = useCallback(() => {
+    if (source) {
+      const sourceWithoutComments = removeComments(source);
+      const module = sourceWithoutComments
+        .split(".module")[1]
+        .split('",')[0]
+        .substring(2);
+      const name = sourceWithoutComments
+        .split(".service")[1]
+        .split(`",`)[0]
+        .substring(2);
+      const dependencies = sourceWithoutComments
+        .split("constructor(")[1]
+        .split(")")[0]
+        .split(",")
+        .map(str => str.trim());
+      const variableDefinitions = dependencies.reduce(
+        (acc, val) => acc + `let ${val}; `,
+        ""
+      );
+      const stubs = dependencies.reduce((acc, val) => {
+        const instancesFound = sourceWithoutComments.split(`${val}`);
+        if (instancesFound.length <= 1)
+          return acc + `${val} = jasmine.createSpy(); `;
+        return acc + extractDependencies(instancesFound.slice(2), val);
+      }, "");
+
+      const providers = dependencies.reduce((acc, val) => {
+        return acc + `$provide.value("${val}", ${val}); `;
+      }, "");
+      setParams({ module, name, variableDefinitions, stubs, providers });
+    }
+  }, [source]);
+
   useEffect(() => {
     if (params.module) {
       setDisplay(serviceSnippet);
@@ -113,7 +149,10 @@ describe("${params.name}", () => {
         onChange={e => setSource(e.target.value)}
       />
       <ButtonColumn>
-        <MiniButton onClick={generateService}>Service Snippet</MiniButton>
+        <MiniButton onClick={generateFactory}>Factory Snippet</MiniButton>
+        <MiniButton onClick={generateServiceClass}>
+          Service Class Snippet
+        </MiniButton>
       </ButtonColumn>
       <ParserDisplay>{display}</ParserDisplay>
     </ParserContainer>
