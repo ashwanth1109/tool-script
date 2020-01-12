@@ -1,6 +1,10 @@
 export const removeComments = str =>
   str.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "");
 
+export const removeAllLineBreaks = src => src.replace(/(\r\n|\n|\r)/gm, "");
+
+export const removeAllSpaces = src => src.replace(/\s/g, "");
+
 export const extractDependencies = (arr, val) => {
   let dependencyArr = [];
   arr.map(item => {
@@ -74,6 +78,23 @@ export const getProviders = deps =>
   deps.reduce((acc, val) => {
     return acc + `$provide.value("${val}", ${val}); `;
   }, "");
+
+// Directive
+
+export const getDirectiveDependencies = src =>
+  src
+    .split("controller:")[1]
+    .split("function(")[1]
+    .split(")")[0]
+    .split(",")
+    .map(str => str.trim())
+    .filter(str => str !== "$scope");
+
+export const getDirectiveName = src =>
+  src
+    .split(".directive")[1]
+    .split(`",`)[0]
+    .substring(2);
 
 // Controller
 

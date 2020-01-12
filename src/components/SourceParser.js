@@ -18,7 +18,11 @@ import {
   getStubs,
   getProviders,
   getControllerSnippet,
-  copyToClipboard
+  copyToClipboard,
+  getDirectiveName,
+  getDirectiveDependencies,
+  removeAllLineBreaks,
+  removeAllSpaces
 } from "./utils";
 
 const SourceParser = () => {
@@ -214,36 +218,15 @@ describe("${params.name}", () => {
   const generateDirective = useCallback(() => {
     if (source) {
       const sourceWithoutComments = removeComments(source);
-      const module = sourceWithoutComments
-        .split(".module")[1]
-        .split('",')[0]
-        .substring(2);
-      const name = sourceWithoutComments
-        .split(".directive")[1]
-        .split(`",`)[0]
-        .substring(2);
-      const dependencies = sourceWithoutComments
-        .split("controller:")[1]
-        .split("function(")[1]
-        .split(")")[0]
-        .split(",")
-        .map(str => str.trim())
-        .filter(str => str !== "$scope");
-      // console.log("dependencies", dependencies);
-      const variableDefinitions = dependencies.reduce(
-        (acc, val) => acc + `let ${val}; `,
-        ""
+      const cleanSource = removeAllSpaces(
+        removeAllLineBreaks(sourceWithoutComments)
       );
-      const stubs = dependencies.reduce((acc, val) => {
-        const instancesFound = sourceWithoutComments.split(`${val}`);
-        if (instancesFound.length <= 1)
-          return acc + `${val} = jasmine.createSpy(); `;
-        return acc + extractDependencies(instancesFound.slice(2), val);
-      }, "");
-
-      const providers = dependencies.reduce((acc, val) => {
-        return acc + `$provide.value("${val}", ${val}); `;
-      }, "");
+      const module = getModule(cleanSource);
+      const name = getDirectiveName(cleanSource);
+      const dependencies = getDirectiveDependencies(cleanSource);
+      const variableDefinitions = getVariableDefinitions(dependencies);
+      const stubs = getStubs(dependencies, cleanSource);
+      const providers = getProviders(dependencies);
       setParams({
         module,
         name,
