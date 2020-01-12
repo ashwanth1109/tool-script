@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { useAlert } from "react-alert";
+
 import {
   ParserContainer,
   ParserInput,
@@ -6,7 +8,18 @@ import {
   MiniButton,
   ParserDisplay
 } from "./styles";
-import { removeComments, extractDependencies } from "./utils";
+import {
+  removeComments,
+  extractDependencies,
+  getModule,
+  getControllerName,
+  getControllerDependencies,
+  getVariableDefinitions,
+  getStubs,
+  getProviders,
+  getControllerSnippet,
+  copyToClipboard
+} from "./utils";
 
 const SourceParser = () => {
   const [display, setDisplay] = useState("");
@@ -20,6 +33,7 @@ const SourceParser = () => {
     providers: "",
     type: ""
   });
+  const alert = useAlert();
   const serviceSnippet = `
 /**
  * Generated at https://ashwanth1109.github.io/tool-script/
@@ -108,6 +122,8 @@ describe("${params.name}", () => {
     });
 });
 `;
+  const controllerSnippet = getControllerSnippet(params);
+
   const generateFactory = useCallback(() => {
     if (source) {
       const sourceWithoutComments = removeComments(source);
@@ -239,6 +255,26 @@ describe("${params.name}", () => {
     }
   }, [source]);
 
+  const generateController = useCallback(() => {
+    if (source) {
+      const sourceWithoutComments = removeComments(source);
+      const module = getModule(sourceWithoutComments);
+      const name = getControllerName(sourceWithoutComments);
+      const dependencies = getControllerDependencies(sourceWithoutComments);
+      const variableDefinitions = getVariableDefinitions(dependencies);
+      const stubs = getStubs(dependencies, sourceWithoutComments);
+      const providers = getProviders(dependencies);
+      setParams({
+        module,
+        name,
+        variableDefinitions,
+        stubs,
+        providers,
+        type: "controller"
+      });
+    }
+  }, [source]);
+
   useEffect(() => {
     switch (params.type) {
       case "service":
@@ -249,6 +285,18 @@ describe("${params.name}", () => {
       case "directive": {
         setDisplay(directiveSnippet);
         break;
+      }
+      case "controller": {
+        setDisplay(controllerSnippet);
+        copyToClipboard(
+          controllerSnippet,
+          () => {
+            alert.success("Copied to clipboard");
+          },
+          () => {
+            alert.error("Some error. Try again!");
+          }
+        );
       }
       default:
         break;
@@ -268,6 +316,7 @@ describe("${params.name}", () => {
           Service Class Snippet
         </MiniButton>
         <MiniButton onClick={generateDirective}>Directive Snippet</MiniButton>
+        <MiniButton onClick={generateController}>Controller Snippet</MiniButton>
       </ButtonColumn>
       <ParserDisplay>{display}</ParserDisplay>
     </ParserContainer>
