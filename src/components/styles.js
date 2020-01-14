@@ -7,7 +7,11 @@ export const Container = styled.div`
   align-items: center;
 `;
 
-export const Heading = styled.h1``;
+export const Heading = styled.h1`
+  width: 100%;
+  text-align: center;
+  color: #4285f4;
+`;
 
 export const Input = styled.input`
   padding: 16px;
@@ -46,3 +50,31 @@ export const ParserDisplay = styled.div`
   white-space: pre-line;
   overflow-y: auto;
 `;
+
+export const ModalDisplay = styled.div`
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+  background: white;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px;
+`;
+
+export const DescribeContainer = styled.div`
+  border-left: 1px solid #3185fc;
+  padding-left: 24px;
+`;
+export const DescribeName = styled.div`
+  color: #3185fc;
+  font-size: 1.4rem;
+`;
+export const DescribeTests = styled.div`
+  padding-left: 24px;
+`;
+export const DescribeTest = styled.div``;

@@ -179,3 +179,5 @@ export const copyToClipboard = (str, onSuccess, onError) => {
     }
   });
 };
+
+export const removeMultiSpaces = str => str.replace(/\s+/g, " ");

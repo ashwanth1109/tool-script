@@ -1,12 +1,16 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useAlert } from "react-alert";
 
+import DescribeBlock from "./DescribeBlock";
+import useCodeReviewer from "./hooks/useCodeReviewer";
 import {
   ParserContainer,
   ParserInput,
   ButtonColumn,
   MiniButton,
-  ParserDisplay
+  ParserDisplay,
+  ModalDisplay,
+  Heading
 } from "./styles";
 import {
   removeComments,
@@ -27,6 +31,10 @@ import {
 
 const SourceParser = () => {
   const [display, setDisplay] = useState("");
+  const [modalDisplay, setModalDisplay] = useState({
+    show: false,
+    testNesting: {}
+  });
   const [source, setSource] = useState("");
   const [params, setParams] = useState({
     module: "",
@@ -286,23 +294,47 @@ describe("${params.name}", () => {
     }
   }, [params]);
 
+  const runCodeReviewer = useCallback(() => {
+    const testNesting = useCodeReviewer(source);
+    console.log("testNesting", testNesting);
+    setModalDisplay({
+      testNesting,
+      show: true
+    });
+  }, [source]);
+
   return (
-    <ParserContainer>
-      <ParserInput
-        data-gramm_editor="false"
-        spellCheck="false"
-        onChange={e => setSource(e.target.value)}
-      />
-      <ButtonColumn>
-        <MiniButton onClick={generateFactory}>Factory Snippet</MiniButton>
-        <MiniButton onClick={generateServiceClass}>
-          Service Class Snippet
-        </MiniButton>
-        <MiniButton onClick={generateDirective}>Directive Snippet</MiniButton>
-        <MiniButton onClick={generateController}>Controller Snippet</MiniButton>
-      </ButtonColumn>
-      <ParserDisplay>{display}</ParserDisplay>
-    </ParserContainer>
+    <>
+      <ParserContainer>
+        <ParserInput
+          data-gramm_editor="false"
+          spellCheck="false"
+          onChange={e => setSource(e.target.value)}
+        />
+        <ButtonColumn>
+          <MiniButton onClick={generateFactory}>Factory Snippet</MiniButton>
+          <MiniButton onClick={generateServiceClass}>
+            Service Class Snippet
+          </MiniButton>
+          <MiniButton onClick={generateDirective}>Directive Snippet</MiniButton>
+          <MiniButton onClick={generateController}>
+            Controller Snippet
+          </MiniButton>
+          <MiniButton onClick={runCodeReviewer}>Review Code</MiniButton>
+        </ButtonColumn>
+        <ParserDisplay>{display}</ParserDisplay>
+      </ParserContainer>
+      {modalDisplay.show && (
+        <ModalDisplay>
+          <Heading>Describe Block Nesting</Heading>
+          <DescribeBlock
+            name={modalDisplay.testNesting.name}
+            tests={modalDisplay.testNesting.tests}
+            subtests={modalDisplay.testNesting.subtests}
+          />
+        </ModalDisplay>
+      )}
+    </>
   );
 };
 
