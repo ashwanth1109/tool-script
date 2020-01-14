@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, Fragment } from "react";
 import { useAlert } from "react-alert";
 
 import DescribeBlock from "./DescribeBlock";
@@ -348,16 +348,19 @@ describe("${params.name}", () => {
           <Heading>Magic Strings</Heading>
           {modalDisplay.magicStrings.length > 0 &&
             modalDisplay.magicStrings.map(str => {
-              const start = str.slice(0, str.indexOf(`"`));
-              const middle = str.slice(str.indexOf(`"`), str.lastIndexOf(`"`));
-              const end = str.slice(str.lastIndexOf(`"`));
-              return (
-                <MagicString key={str}>
-                  {start}
-                  <span>{middle}</span>
-                  {end}
-                </MagicString>
-              );
+              if (str) {
+                const parts = str.split(`"`);
+                console.log("parts", parts);
+                return (
+                  <MagicString key={str}>
+                    {parts.map((part, id) => {
+                      if (id % 2 === 0)
+                        return <Fragment key={id}>{part}</Fragment>;
+                      return <span key={id}>"{part}"</span>;
+                    })}
+                  </MagicString>
+                );
+              }
             })}
 
           <Heading>
