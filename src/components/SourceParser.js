@@ -10,7 +10,8 @@ import {
   MiniButton,
   ParserDisplay,
   ModalDisplay,
-  Heading
+  Heading,
+  MagicString
 } from "./styles";
 import {
   removeComments,
@@ -33,7 +34,10 @@ const SourceParser = () => {
   const [display, setDisplay] = useState("");
   const [modalDisplay, setModalDisplay] = useState({
     show: false,
-    testNesting: {}
+    testNesting: {},
+    magicStrings: null,
+    forbiddenKeywords: null,
+    globalDeclarations: null
   });
   const [source, setSource] = useState("");
   const [params, setParams] = useState({
@@ -295,11 +299,19 @@ describe("${params.name}", () => {
   }, [params]);
 
   const runCodeReviewer = useCallback(() => {
-    const testNesting = useCodeReviewer(source);
-    console.log("testNesting", testNesting);
+    const {
+      testNesting,
+      magicStrings,
+      forbiddenKeywords,
+      globalDeclarations
+    } = useCodeReviewer(source);
+
     setModalDisplay({
       testNesting,
-      show: true
+      show: true,
+      magicStrings,
+      forbiddenKeywords,
+      globalDeclarations
     });
   }, [source]);
 
@@ -332,6 +344,36 @@ describe("${params.name}", () => {
             tests={modalDisplay.testNesting.tests}
             subtests={modalDisplay.testNesting.subtests}
           />
+
+          <Heading>Magic Strings</Heading>
+          {modalDisplay.magicStrings.length > 0 &&
+            modalDisplay.magicStrings.map(str => {
+              const start = str.slice(0, str.indexOf(`"`));
+              const middle = str.slice(str.indexOf(`"`), str.lastIndexOf(`"`));
+              const end = str.slice(str.lastIndexOf(`"`));
+              return (
+                <MagicString key={str}>
+                  {start}
+                  <span>{middle}</span>
+                  {end}
+                </MagicString>
+              );
+            })}
+
+          <Heading>
+            Possible List of Forbidden Keywords:{" "}
+            {modalDisplay.forbiddenKeywords.length === 0 ? "None" : ""}
+          </Heading>
+          {modalDisplay.forbiddenKeywords.length > 0 &&
+            modalDisplay.forbiddenKeywords.map(str => (
+              <MagicString>{str}</MagicString>
+            ))}
+
+          <Heading>Global Declarations (if any):</Heading>
+          {modalDisplay.globalDeclarations.length > 0 &&
+            modalDisplay.globalDeclarations.map(str => (
+              <MagicString>{str}</MagicString>
+            ))}
         </ModalDisplay>
       )}
     </>

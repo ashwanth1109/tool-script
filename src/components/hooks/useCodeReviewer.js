@@ -26,42 +26,137 @@ const unwrapDescribeStatements = src => {
   // Identify describe block
   let currentLevel = null;
   let test = null;
+  let statement = null;
+  let magicStrings = [];
+  let forbiddenKeywords = [];
+  let globalDeclarations = [];
   while (src.length > 0) {
-    if (src[0] === "d") {
-      if (src.slice(0, 8) === "describe") {
-        src = src.slice(10);
-        const name = src.slice(0, src.indexOf(`"`));
-        src = src.slice(src.indexOf(`"`));
-        src = src.slice(src.indexOf(`{`) + 1);
-        const describe = new Describe(name);
-        if (test === null) {
-          test = describe;
-          currentLevel = test;
-        } else {
-          currentLevel.addSubtest(describe);
-          describe.parent = currentLevel;
-          currentLevel = describe;
+    switch (src[0]) {
+      case ";": {
+        const next = src.slice(1);
+        statement = next.slice(0, next.indexOf(";"));
+        break;
+      }
+      case '"': {
+        if (!magicStrings.includes(statement)) {
+          magicStrings.push(statement);
         }
-        currentLevel.curly += 1;
+        break;
       }
-    }
-    if (src[0] === "i") {
-      if (src.slice(0, 4) === 'it("') {
-        src = src.slice(4);
-        const name = src.slice(0, src.indexOf(`"`));
-        src = src.slice(src.indexOf(`"`));
-        src = src.slice(src.indexOf(`{`) + 1);
-        currentLevel.addTest(name);
-        currentLevel.curly += 1;
+      case "d": {
+        if (src.slice(0, 8) === "describe") {
+          src = src.slice(10);
+          const name = src.slice(0, src.indexOf(`"`));
+          src = src.slice(src.indexOf(`"`));
+          src = src.slice(src.indexOf(`{`) + 1);
+          const describe = new Describe(name);
+          if (test === null) {
+            test = describe;
+            currentLevel = test;
+          } else {
+            currentLevel.addSubtest(describe);
+            describe.parent = currentLevel;
+            currentLevel = describe;
+          }
+          currentLevel.curly += 1;
+        }
+        break;
       }
+      case "i": {
+        if (src.slice(0, 4) === 'it("') {
+          src = src.slice(4);
+          const name = src.slice(0, src.indexOf(`"`));
+          src = src.slice(src.indexOf(`"`));
+          src = src.slice(src.indexOf(`{`) + 1);
+          currentLevel.addTest(name);
+          currentLevel.curly += 1;
+        } else if (src.slice(0, 4) === "if (") {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+        break;
+      }
+      case "{": {
+        currentLevel.curly += 1;
+        break;
+      }
+      case "}": {
+        currentLevel.curly -= 1;
+        break;
+      }
+      case "f": {
+        if (
+          src.slice(0, 9) === "fdescribe" ||
+          src.slice(0, 3) === "fit" ||
+          src.slice(0, 5) === "for (" ||
+          src.slice(0, 8) === "forEach("
+        ) {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+        break;
+      }
+      case "x": {
+        if (src.slice(0, 9) === "xdescribe" || src.slice(0, 3) === "xit") {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+        break;
+      }
+      case "a": {
+        if (src.slice(0, 3) === "any") {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+        break;
+      }
+      case "s": {
+        if (src.slice(0, 6) === "switch") {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+        break;
+      }
+      case "m": {
+        if (src.slice(0, 3) === "map") {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+        break;
+      }
+      case "c": {
+        if (src.slice(0, 5) === "clock") {
+          if (!forbiddenKeywords.includes(statement)) {
+            forbiddenKeywords.push(statement);
+          }
+        }
+      }
+      case "w": {
+        if (src.slice(0, 7) === "window.") {
+          globalDeclarations.push(statement);
+        }
+      }
+      default:
+        break;
     }
-    if (currentLevel && src[0] === "{") currentLevel.curly += 1;
-    if (currentLevel && src[0] === "}") currentLevel.curly -= 1;
-    if (currentLevel && currentLevel.curly === 0)
+
+    if (currentLevel && currentLevel.curly === 0) {
       currentLevel = currentLevel.parent;
+    }
     src = src.slice(1);
   }
-  return test;
+  return {
+    testNesting: test,
+    magicStrings,
+    forbiddenKeywords,
+    globalDeclarations
+  };
 };
 
 const useCodeReviewer = source => {

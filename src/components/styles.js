@@ -8,8 +8,6 @@ export const Container = styled.div`
 `;
 
 export const Heading = styled.h1`
-  width: 100%;
-  text-align: center;
   color: #4285f4;
 `;
 
@@ -78,3 +76,11 @@ export const DescribeTests = styled.div`
   padding-left: 24px;
 `;
 export const DescribeTest = styled.div``;
+
+export const MagicString = styled.div`
+  font-weight: semi-bold;
+  > span {
+    font-weight: bold;
+    color: #00a878;
+  }
+`;
