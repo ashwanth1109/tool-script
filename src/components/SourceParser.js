@@ -1,17 +1,13 @@
-import React, { useState, useCallback, useEffect, Fragment } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useAlert } from "react-alert";
 
-import DescribeBlock from "./DescribeBlock";
 import useCodeReviewer from "./hooks/useCodeReviewer";
 import {
   ParserContainer,
   ParserInput,
   ButtonColumn,
   MiniButton,
-  ParserDisplay,
-  ModalDisplay,
-  Heading,
-  MagicString
+  ParserDisplay
 } from "./styles";
 import {
   removeComments,
@@ -29,6 +25,7 @@ import {
   removeAllLineBreaks,
   removeAllSpaces
 } from "./utils";
+import ReviewComponent from "./ReviewComponent";
 
 const SourceParser = () => {
   const [display, setDisplay] = useState("");
@@ -336,49 +333,7 @@ describe("${params.name}", () => {
         </ButtonColumn>
         <ParserDisplay>{display}</ParserDisplay>
       </ParserContainer>
-      {modalDisplay.show && (
-        <ModalDisplay>
-          <Heading>Describe Block Nesting</Heading>
-          <DescribeBlock
-            name={modalDisplay.testNesting.name}
-            tests={modalDisplay.testNesting.tests}
-            subtests={modalDisplay.testNesting.subtests}
-          />
-
-          <Heading>Magic Strings</Heading>
-          {modalDisplay.magicStrings.length > 0 &&
-            modalDisplay.magicStrings.map(str => {
-              if (str) {
-                const parts = str.split(`"`);
-                console.log("parts", parts);
-                return (
-                  <MagicString key={str}>
-                    {parts.map((part, id) => {
-                      if (id % 2 === 0)
-                        return <Fragment key={id}>{part}</Fragment>;
-                      return <span key={id}>"{part}"</span>;
-                    })}
-                  </MagicString>
-                );
-              }
-            })}
-
-          <Heading>
-            Possible List of Forbidden Keywords:{" "}
-            {modalDisplay.forbiddenKeywords.length === 0 ? "None" : ""}
-          </Heading>
-          {modalDisplay.forbiddenKeywords.length > 0 &&
-            modalDisplay.forbiddenKeywords.map(str => (
-              <MagicString>{str}</MagicString>
-            ))}
-
-          <Heading>Global Declarations (if any):</Heading>
-          {modalDisplay.globalDeclarations.length > 0 &&
-            modalDisplay.globalDeclarations.map(str => (
-              <MagicString>{str}</MagicString>
-            ))}
-        </ModalDisplay>
-      )}
+      {modalDisplay.show && <ReviewComponent modalDisplay={modalDisplay} />}
     </>
   );
 };

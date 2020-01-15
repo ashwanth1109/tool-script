@@ -72,10 +72,11 @@ export const DescribeName = styled.div`
   color: #3185fc;
   font-size: 1.4rem;
 `;
-export const DescribeTests = styled.div`
-  padding-left: 24px;
+export const DescribeTests = styled.div``;
+
+export const DescribeTest = styled.div`
+  text-decoration: ${props => (props.isChecked ? "line-through" : "")};
 `;
-export const DescribeTest = styled.div``;
 
 export const MagicString = styled.div`
   font-weight: semi-bold;

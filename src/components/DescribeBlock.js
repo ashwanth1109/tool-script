@@ -1,15 +1,15 @@
-import React from "react";
-
+import React, { useState, useCallback } from "react";
+import Checkbox from "@material-ui/core/Checkbox";
 import {
   DescribeContainer,
   DescribeName,
   DescribeTests,
   DescribeTest
 } from "./styles";
+import TestItem from "./TestItem";
 
 const DescribeBlock = ({ name, tests, subtests }) => {
   let children = null;
-
   if (subtests && subtests.length) {
     children = (
       <div>
@@ -24,12 +24,13 @@ const DescribeBlock = ({ name, tests, subtests }) => {
       </div>
     );
   }
+
   return (
     <DescribeContainer>
       <DescribeName>{name}</DescribeName>
       <DescribeTests>
-        {tests.map(test => (
-          <DescribeTest>{test}</DescribeTest>
+        {tests.map((test, id) => (
+          <TestItem test={test} key={test} />
         ))}
       </DescribeTests>
       {children}
