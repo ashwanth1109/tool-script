@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 
 import DescribeBlock from "./DescribeBlock";
-import { ModalDisplay, Heading, MagicString, Text } from "./styles";
+import { ModalDisplay, Heading, MagicString, Text, BlueText } from "./styles";
 
 const ReviewComponent = ({ modalDisplay }) => {
   return (
@@ -42,6 +42,16 @@ const ReviewComponent = ({ modalDisplay }) => {
       {modalDisplay.globalDeclarations.length > 0 &&
         modalDisplay.globalDeclarations.map(str => (
           <MagicString>{str}</MagicString>
+        ))}
+
+      <Heading>Potential Red Findings:</Heading>
+      {modalDisplay.redFindings.length > 0 &&
+        modalDisplay.redFindings.map(str => (
+          <>
+            <BlueText>{str.type}</BlueText>
+            <Text>{str.statement}</Text>
+            <br />
+          </>
         ))}
 
       <Heading>Orphan Statements (needs some more filtering):</Heading>

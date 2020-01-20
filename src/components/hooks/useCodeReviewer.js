@@ -32,6 +32,7 @@ const unwrapDescribeStatements = src => {
   let globalDeclarations = [];
   let statements = [];
   let orphanStatements = [];
+  let redFindings = [];
 
   const statementChecks = (sliceVal = 1) => {
     const next = src.slice(sliceVal);
@@ -60,6 +61,8 @@ const unwrapDescribeStatements = src => {
       case "=": {
         if (src[1] === ">") {
           statementChecks(2);
+        } else if (src.slice(0, 2) === "==" && src.slice(0, 3) === "===") {
+          redFindings.push({ statement, type: "Loose Inequality Check" });
         }
         break;
       }
@@ -71,6 +74,10 @@ const unwrapDescribeStatements = src => {
         if (!magicStrings.includes(statement)) {
           magicStrings.push(statement);
         }
+        break;
+      }
+      case "`": {
+        redFindings.push({ statement, type: "Backtick Unbalanced" });
         break;
       }
       case "d": {
@@ -90,6 +97,14 @@ const unwrapDescribeStatements = src => {
           }
           currentLevel.curly += 1;
           statementChecks();
+        } else if (src.slice(0, 8) === "debugger") {
+          redFindings.push({ statement, type: "Debugger Statement" });
+        }
+        break;
+      }
+      case "h": {
+        if (src.slice(0, 14) === "hasOwnProperty") {
+          redFindings.push({ statement, type: "hasOwnProperty" });
         }
         break;
       }
@@ -106,6 +121,8 @@ const unwrapDescribeStatements = src => {
           if (!forbiddenKeywords.includes(statement)) {
             forbiddenKeywords.push(statement);
           }
+        } else if (src.slice(0, 7) === "indexOf") {
+          redFindings.push({ statement, type: "indexOf" });
         }
         break;
       }
@@ -114,11 +131,16 @@ const unwrapDescribeStatements = src => {
           src.slice(0, 9) === "fdescribe" ||
           src.slice(0, 3) === "fit" ||
           src.slice(0, 5) === "for (" ||
-          src.slice(0, 8) === "forEach("
+          src.slice(0, 8) === "forEach(" ||
+          src.slice(0, 8) === "for each"
         ) {
           if (!forbiddenKeywords.includes(statement)) {
             forbiddenKeywords.push(statement);
           }
+        } else if (src.slice(0, 6) === "filter") {
+          redFindings.push({ statement, type: "filter" });
+        } else if (src.slice(0, 4) === "findIndexOf") {
+          redFindings.push({ statement, type: "findIndexOf" });
         }
         break;
       }
@@ -135,6 +157,10 @@ const unwrapDescribeStatements = src => {
           if (!forbiddenKeywords.includes(statement)) {
             forbiddenKeywords.push(statement);
           }
+        } else if (src.slice(0, 6) === "assign") {
+          redFindings.push({ statement, type: "assign" });
+        } else if (src.slice(0, 5) === "await") {
+          redFindings.push({ statement, type: "await" });
         }
         break;
       }
@@ -143,8 +169,21 @@ const unwrapDescribeStatements = src => {
           if (!forbiddenKeywords.includes(statement)) {
             forbiddenKeywords.push(statement);
           }
+        } else if (src.slice(0, 6) === "splice") {
+          redFindings.push({ statement, type: "splice" });
+        } else if (src.slice(0, 10) === "setTimeout") {
+          redFindings.push({ statement, type: "setTimeout" });
+        } else if (src.slice(0, 11) === "setInterval") {
+          redFindings.push({ statement, type: "setInterval" });
         }
         break;
+      }
+      case "l": {
+        if (src.slice(0, 3) === "let") {
+          if (statement.indexOf("=") !== -1) {
+            redFindings.push({ statement, type: "let and =" });
+          }
+        }
       }
       case "m": {
         if (src.slice(0, 3) === "map") {
@@ -154,17 +193,36 @@ const unwrapDescribeStatements = src => {
         }
         break;
       }
+      case "n": {
+        if (src.slice(0, 3) === "new") {
+          redFindings.push({ statement, type: "new" });
+        }
+        break;
+      }
       case "c": {
         if (src.slice(0, 5) === "clock") {
           if (!forbiddenKeywords.includes(statement)) {
             forbiddenKeywords.push(statement);
           }
         }
+        break;
+      }
+      case "t": {
+        if (src.slice(0, 5) === "throw") {
+          redFindings.push({ statement, type: "throw" });
+        }
+        break;
+      }
+      case "v": {
+        if (src.slice(0, 3) === "var") {
+          redFindings.push({ statement, type: "var" });
+        }
       }
       case "w": {
         if (src.slice(0, 7) === "window.") {
           globalDeclarations.push(statement);
         }
+        break;
       }
       default:
         break;
@@ -181,6 +239,7 @@ const unwrapDescribeStatements = src => {
     forbiddenKeywords,
     globalDeclarations,
     orphanStatements,
+    redFindings,
     statements
   };
 };

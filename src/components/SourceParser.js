@@ -38,6 +38,7 @@ const SourceParser = () => {
     forbiddenKeywords: null,
     globalDeclarations: null,
     orphanStatements: null,
+    redFindings: null,
     statements: null
   });
   const [source, setSource] = useState("");
@@ -284,6 +285,7 @@ describe("${params.name}", () => {
       forbiddenKeywords,
       globalDeclarations,
       orphanStatements,
+      redFindings,
       statements
     } = useCodeReviewer(source);
 
@@ -294,6 +296,7 @@ describe("${params.name}", () => {
       forbiddenKeywords,
       globalDeclarations,
       orphanStatements,
+      redFindings,
       statements
     });
   }, [source]);

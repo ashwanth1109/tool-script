@@ -89,3 +89,8 @@ export const MagicString = styled.div`
 export const Text = styled.div`
   font-weight: semi-bold;
 `;
+
+export const BlueText = styled.div`
+  font-weight: bold;
+  color: #00a878;
+`;
