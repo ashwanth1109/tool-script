@@ -64,7 +64,8 @@ const ReviewComponent = ({ modalDisplay }) => {
         ))}
 
       <Heading>
-        Statements (temporary section for measuring tool accuracy): Remove Later
+        Statements (temporary section for understanding tool accuracy): Remove
+        Later
       </Heading>
       {modalDisplay.statements.length > 0 &&
         modalDisplay.statements.map(st => (
