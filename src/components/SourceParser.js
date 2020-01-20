@@ -23,7 +23,9 @@ import {
   getDirectiveName,
   getDirectiveDependencies,
   removeAllLineBreaks,
-  removeAllSpaces
+  removeAllSpaces,
+  getServiceDependencies,
+  getFactoryDependencies
 } from "./utils";
 import ReviewComponent from "./ReviewComponent";
 
@@ -140,37 +142,15 @@ describe("${params.name}", () => {
   const generateFactory = useCallback(() => {
     if (source) {
       const sourceWithoutComments = removeComments(source);
-      const module = sourceWithoutComments
-        .split(".module")[1]
-        .split('",')[0]
-        .substring(2);
-
-      const name = sourceWithoutComments
-        .split(".factory")[1]
-        .split(`",`)[0]
-        .substring(2);
-
-      const dependencies = sourceWithoutComments
-        .split(".factory")[1]
-        .split("function(")[1]
-        .split(") {")[0]
-        .split(",")
-        .map(str => str.trim());
-      const variableDefinitions = dependencies.reduce(
-        (acc, val) => acc + `let ${val}; `,
-        ""
+      const cleanSource = removeAllSpaces(
+        removeAllLineBreaks(sourceWithoutComments)
       );
-      const stubs = dependencies.reduce((acc, val) => {
-        const instancesFound = sourceWithoutComments.split(`${val}`);
-        if (instancesFound.length <= 1)
-          return acc + `${val} = jasmine.createSpy(); `;
-        return acc + extractDependencies(instancesFound.slice(2), val);
-      }, "");
-
-      const providers = dependencies.reduce((acc, val) => {
-        return acc + `$provide.value("${val}", ${val}); `;
-      }, "");
-
+      const module = getModule(cleanSource);
+      const name = getFactoryName(cleanSource);
+      const dependencies = getFactoryDependencies(cleanSource);
+      const variableDefinitions = getVariableDefinitions(dependencies);
+      const stubs = getStubs(dependencies, cleanSource);
+      const providers = getProviders(dependencies);
       setParams({
         module,
         name,
@@ -186,33 +166,15 @@ describe("${params.name}", () => {
   const generateServiceClass = useCallback(() => {
     if (source) {
       const sourceWithoutComments = removeComments(source);
-      const module = sourceWithoutComments
-        .split(".module")[1]
-        .split('",')[0]
-        .substring(2);
-      const name = sourceWithoutComments
-        .split(".service")[1]
-        .split(`",`)[0]
-        .substring(2);
-      const dependencies = sourceWithoutComments
-        .split("constructor(")[1]
-        .split(")")[0]
-        .split(",")
-        .map(str => str.trim());
-      const variableDefinitions = dependencies.reduce(
-        (acc, val) => acc + `let ${val}; `,
-        ""
+      const cleanSource = removeAllSpaces(
+        removeAllLineBreaks(sourceWithoutComments)
       );
-      const stubs = dependencies.reduce((acc, val) => {
-        const instancesFound = sourceWithoutComments.split(`${val}`);
-        if (instancesFound.length <= 1)
-          return acc + `${val} = jasmine.createSpy(); `;
-        return acc + extractDependencies(instancesFound.slice(2), val);
-      }, "");
-
-      const providers = dependencies.reduce((acc, val) => {
-        return acc + `$provide.value("${val}", ${val}); `;
-      }, "");
+      const module = getModule(cleanSource);
+      const name = getServiceName(cleanSource);
+      const dependencies = getServiceDependencies(cleanSource);
+      const variableDefinitions = getVariableDefinitions(dependencies);
+      const stubs = getStubs(dependencies, cleanSource);
+      const providers = getProviders(dependencies);
       setParams({
         module,
         name,
@@ -272,10 +234,28 @@ describe("${params.name}", () => {
       case "service":
       case "factory": {
         setDisplay(serviceSnippet);
+        copyToClipboard(
+          serviceSnippet,
+          () => {
+            alert.success("Copied to clipboard");
+          },
+          () => {
+            alert.error("Some error. Try again!");
+          }
+        );
         break;
       }
       case "directive": {
         setDisplay(directiveSnippet);
+        copyToClipboard(
+          directiveSnippet,
+          () => {
+            alert.success("Copied to clipboard");
+          },
+          () => {
+            alert.error("Some error. Try again!");
+          }
+        );
         break;
       }
       case "controller": {

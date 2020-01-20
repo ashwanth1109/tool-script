@@ -113,6 +113,37 @@ export const getControllerDependencies = src =>
     .map(str => str.trim())
     .filter(str => str !== "$scope" && str !== "$controller");
 
+// Service
+
+export const getServiceName = src =>
+  src
+    .split(".service")[1]
+    .split(`",`)[0]
+    .substring(2);
+
+export const getServiceDependencies = src =>
+  src
+    .split("constructor(")[1]
+    .split(")")[0]
+    .split(",")
+    .map(str => str.trim());
+
+// Factory
+
+export const getFactoryName = src =>
+  src
+    .split(".factory")[1]
+    .split(`",`)[0]
+    .substring(2);
+
+export const getFactoryDependencies = src =>
+  src
+    .split(".factory")[1]
+    .split("function(")[1]
+    .split(") {")[0]
+    .split(",")
+    .map(str => str.trim());
+
 export const getControllerSnippet = params => {
   return `
   /**
