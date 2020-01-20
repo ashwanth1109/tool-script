@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 
 import DescribeBlock from "./DescribeBlock";
-import { ModalDisplay, Heading, MagicString } from "./styles";
+import { ModalDisplay, Heading, MagicString, Text } from "./styles";
 
 const ReviewComponent = ({ modalDisplay }) => {
   return (
@@ -18,7 +18,6 @@ const ReviewComponent = ({ modalDisplay }) => {
         modalDisplay.magicStrings.map(str => {
           if (str) {
             const parts = str.split(`"`);
-            console.log("parts", parts);
             return (
               <MagicString key={str}>
                 {parts.map((part, id) => {
@@ -43,6 +42,26 @@ const ReviewComponent = ({ modalDisplay }) => {
       {modalDisplay.globalDeclarations.length > 0 &&
         modalDisplay.globalDeclarations.map(str => (
           <MagicString>{str}</MagicString>
+        ))}
+
+      <Heading>Orphan Statements (needs some more filtering):</Heading>
+      {modalDisplay.orphanStatements.length > 0 &&
+        modalDisplay.orphanStatements.map(str => (
+          <>
+            <Text>{str}</Text>
+            <br />
+          </>
+        ))}
+
+      <Heading>
+        Statements (temporary section for measuring tool accuracy): Remove Later
+      </Heading>
+      {modalDisplay.statements.length > 0 &&
+        modalDisplay.statements.map(st => (
+          <>
+            <Text>{st}</Text>
+            <br />
+          </>
         ))}
     </ModalDisplay>
   );

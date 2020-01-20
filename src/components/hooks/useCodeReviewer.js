@@ -30,11 +30,41 @@ const unwrapDescribeStatements = src => {
   let magicStrings = [];
   let forbiddenKeywords = [];
   let globalDeclarations = [];
+  let statements = [];
+  let orphanStatements = [];
+
+  const statementChecks = (sliceVal = 1) => {
+    const next = src.slice(sliceVal);
+    // console.log("next", next);
+    statement = next.slice(0, next.indexOf(";") + 1);
+    if (
+      statement.indexOf("=") === -1 &&
+      statement.indexOf("let") === -1 &&
+      statement.indexOf("})") === -1
+    ) {
+      orphanStatements.push(statement);
+    }
+    statements.push(statement);
+  };
+
   while (src.length > 0) {
     switch (src[0]) {
+      case "{": {
+        currentLevel.curly += 1;
+        break;
+      }
+      case "}": {
+        currentLevel.curly -= 1;
+        break;
+      }
+      case "=": {
+        if (src[1] === ">") {
+          statementChecks(2);
+        }
+        break;
+      }
       case ";": {
-        const next = src.slice(1);
-        statement = next.slice(0, next.indexOf(";"));
+        statementChecks();
         break;
       }
       case '"': {
@@ -59,6 +89,7 @@ const unwrapDescribeStatements = src => {
             currentLevel = describe;
           }
           currentLevel.curly += 1;
+          statementChecks();
         }
         break;
       }
@@ -70,19 +101,12 @@ const unwrapDescribeStatements = src => {
           src = src.slice(src.indexOf(`{`) + 1);
           currentLevel.addTest(name);
           currentLevel.curly += 1;
+          statementChecks();
         } else if (src.slice(0, 4) === "if (") {
           if (!forbiddenKeywords.includes(statement)) {
             forbiddenKeywords.push(statement);
           }
         }
-        break;
-      }
-      case "{": {
-        currentLevel.curly += 1;
-        break;
-      }
-      case "}": {
-        currentLevel.curly -= 1;
         break;
       }
       case "f": {
@@ -155,7 +179,9 @@ const unwrapDescribeStatements = src => {
     testNesting: test,
     magicStrings,
     forbiddenKeywords,
-    globalDeclarations
+    globalDeclarations,
+    orphanStatements,
+    statements
   };
 };
 

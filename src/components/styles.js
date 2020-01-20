@@ -85,3 +85,7 @@ export const MagicString = styled.div`
     color: #00a878;
   }
 `;
+
+export const Text = styled.div`
+  font-weight: semi-bold;
+`;

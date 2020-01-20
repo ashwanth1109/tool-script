@@ -36,7 +36,9 @@ const SourceParser = () => {
     testNesting: {},
     magicStrings: null,
     forbiddenKeywords: null,
-    globalDeclarations: null
+    globalDeclarations: null,
+    orphanStatements: null,
+    statements: null
   });
   const [source, setSource] = useState("");
   const [params, setParams] = useState({
@@ -280,7 +282,9 @@ describe("${params.name}", () => {
       testNesting,
       magicStrings,
       forbiddenKeywords,
-      globalDeclarations
+      globalDeclarations,
+      orphanStatements,
+      statements
     } = useCodeReviewer(source);
 
     setModalDisplay({
@@ -288,7 +292,9 @@ describe("${params.name}", () => {
       show: true,
       magicStrings,
       forbiddenKeywords,
-      globalDeclarations
+      globalDeclarations,
+      orphanStatements,
+      statements
     });
   }, [source]);
 
